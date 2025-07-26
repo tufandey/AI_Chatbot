@@ -121,7 +121,7 @@ streamlit run frontend.py
 
 ### 🙌 Credits
 
-* Built by [Tufan Dey](https://github.com/your-username)
+* Built by [Tufan Dey](https://github.com/tufandey)
 * Powered by [LangChain](https://www.langchain.com/), [Groq](https://www.groq.com/), [Streamlit](https://streamlit.io/), and [FastAPI](https://fastapi.tiangolo.com/)
 
 
