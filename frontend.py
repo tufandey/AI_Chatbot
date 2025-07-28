@@ -14,27 +14,28 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY")
 
-# Step 3: Streamlit UI
+# Step 3: Streamlit UI Setup
 st.set_page_config(page_title="🤖 TufanBot", layout="centered")
 st.title("🤖 TufanBot - Your Friendly AI Chat Companion")
 st.write("💬 Chat, Chill, and Ask Me Anything!")
 
-# Model selection
-MODEL_NAMES_GROQ = ["llama-3.3-70b-versatile", "mixtral-8x7b-32768"]
-selected_model = st.selectbox("🦙 Select Groq Model:", MODEL_NAMES_GROQ)
+# Fixed model (llama-3.3-70b-versatile only)
+selected_model = "llama-3.3-70b-versatile"
 
-# System prompt and search
+# System prompt input
 system_prompt = st.text_area(
     "🧠 Define your AI Agent (e.g., Financial Analyst, Doctor, Teacher):",
     height=70,
     placeholder="Type your system prompt here..."
 )
+
+# Optional web search
 allow_web_search = st.checkbox("🌐 Allow Web Search")
 
-# User query
+# User query input
 user_query = st.text_area("✍️ Enter your query:", height=150, placeholder="Ask anything!")
 
-# Ask button
+# Ask button logic
 if st.button("Ask Tufan!"):
     if user_query.strip():
         try:
@@ -45,20 +46,20 @@ if st.button("Ask Tufan!"):
             llm = ChatGroq(model=selected_model)
             tools = [TavilySearchResults(max_results=2)] if allow_web_search else []
 
-            # Build agent
+            # Create AI agent
             agent = create_react_agent(
                 model=llm,
                 tools=tools,
                 state_modifier=system_prompt
             )
 
-            # Run query
+            # Send user query
             state = {"messages": user_query}
             result = agent.invoke(state)
             messages = result.get("messages", [])
             ai_messages = [msg.content for msg in messages if isinstance(msg, AIMessage)]
 
-            status.empty()  # ✅ Hide "Thinking..." message
+            status.empty()  # Hide "Thinking..." message
 
             # Show result
             if ai_messages:
