@@ -1,59 +1,68 @@
-# Load environment variables if not using pipenv
+# Load environment variables
 from dotenv import load_dotenv
 load_dotenv()
 
-# Step 1: Setup UI with Streamlit
+# Step 1: Import libraries
+import os
 import streamlit as st
+from langchain_groq import ChatGroq
+from langgraph.prebuilt import create_react_agent
+from langchain_core.messages.ai import AIMessage
+from langchain_community.tools.tavily_search import TavilySearchResults
 
-st.set_page_config(page_title="Hey Tufan!", layout="centered")
+# Step 2: Read API keys
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY")
+
+# Step 3: Streamlit UI
+st.set_page_config(page_title="🤖 TufanBot", layout="centered")
 st.title("🤖 TufanBot - Your Friendly AI Chat Companion")
 st.write("💬 Chat, Chill, and Ask Me Anything!")
 
-# System prompt setup
+# Model selection
+MODEL_NAMES_GROQ = ["llama-3.3-70b-versatile", "mixtral-8x7b-32768"]
+selected_model = st.selectbox("🦙 Select Groq Model:", MODEL_NAMES_GROQ)
+
+# System prompt and search
 system_prompt = st.text_area(
     "🧠 Define your AI Agent (e.g., Financial Analyst, Doctor, Teacher):",
     height=70,
     placeholder="Type your system prompt here..."
 )
-
-# Groq models only
-MODEL_NAMES_GROQ = ["llama-3.3-70b-versatile", "mixtral-8x7b-32768"]
-provider = "Groq"  # Fixed provider
-
-selected_model = st.selectbox("🦙 Select Groq Model:", MODEL_NAMES_GROQ)
-
-# Web search toggle
 allow_web_search = st.checkbox("🌐 Allow Web Search")
 
-# Query input
-user_query = st.text_area("✍️ Enter your query:", height=150, placeholder="Ask Anything!")
+# User query
+user_query = st.text_area("✍️ Enter your query:", height=150, placeholder="Ask anything!")
 
-# API endpoint (FastAPI)
-API_URL = "http://127.0.0.1:9999/chat"
-
-# Button to send query
+# Ask button
 if st.button("Ask Tufan!"):
     if user_query.strip():
-        import requests
-
-        payload = {
-            "model_name": selected_model,
-            "model_provider": provider,
-            "system_prompt": system_prompt,
-            "messages": [user_query],
-            "allow_search": allow_web_search
-        }
-
         try:
-            response = requests.post(API_URL, json=payload)
-            if response.status_code == 200:
-                response_data = response.json()
-                if "error" in response_data:
-                    st.error(f"🚫 {response_data['error']}")
-                else:
-                    st.subheader("🤖 TufanBot says:")
-                    st.markdown(f"**{response_data}**")
+            st.info("🔄 Thinking...")
+
+            # Initialize LLM and tools
+            llm = ChatGroq(model=selected_model)
+            tools = [TavilySearchResults(max_results=2)] if allow_web_search else []
+
+            # Build agent
+            agent = create_react_agent(
+                model=llm,
+                tools=tools,
+                state_modifier=system_prompt
+            )
+
+            # Run query
+            state = {"messages": user_query}
+            result = agent.invoke(state)
+            messages = result.get("messages", [])
+            ai_messages = [msg.content for msg in messages if isinstance(msg, AIMessage)]
+
+            # Show result
+            if ai_messages:
+                st.subheader("🤖 TufanBot says:")
+                st.markdown(f"**{ai_messages[-1]}**")
             else:
-                st.error("❌ Failed to get a valid response from the backend.")
+                st.warning("No response received.")
+
         except Exception as e:
-            st.error(f"💥 Error connecting to backend: {e}")
+            st.error(f"💥 Error: {e}")
