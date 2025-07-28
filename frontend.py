@@ -40,7 +40,7 @@ user_query = st.text_area("💬 Ask Anything:", height=150, placeholder="Type yo
 selected_model = "llama-3.3-70b-versatile"
 
 # 🚀 Trigger response
-if st.button("🚀 Ask Tufan!"):
+if st.button("🚀 Ask!"):
     if user_query.strip():
         try:
             status = st.empty()
