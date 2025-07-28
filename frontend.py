@@ -30,7 +30,7 @@ system_prompt = st.text_area(
 )
 
 # Optional web search
-allow_web_search = st.checkbox("🌐 Allow Web Search")
+allow_web_search = st.checkbox("🌐 Allow Web Search (for latest result)")
 
 # User query input
 user_query = st.text_area("✍️ Enter your query:", height=150, placeholder="Ask anything!")
