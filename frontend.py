@@ -31,7 +31,7 @@ system_prompt = st.text_area(
 )
 
 # 🌐 Enable optional web search
-allow_web_search = st.checkbox("🌐 Enable Web Search via Tavily")
+allow_web_search = st.checkbox("🌐 Allow Web Search (for latest result)")
 
 # ✍️ User Query Input
 user_query = st.text_area("💬 Ask Anything:", height=150, placeholder="Type your question here...")
