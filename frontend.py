@@ -38,7 +38,8 @@ user_query = st.text_area("✍️ Enter your query:", height=150, placeholder="A
 if st.button("Ask Tufan!"):
     if user_query.strip():
         try:
-            st.info("🔄 Thinking...")
+            status = st.empty()
+            status.info("🔄 Thinking...")
 
             # Initialize LLM and tools
             llm = ChatGroq(model=selected_model)
@@ -57,12 +58,15 @@ if st.button("Ask Tufan!"):
             messages = result.get("messages", [])
             ai_messages = [msg.content for msg in messages if isinstance(msg, AIMessage)]
 
+            status.empty()  # ✅ Hide "Thinking..." message
+
             # Show result
             if ai_messages:
                 st.subheader("🤖 TufanBot says:")
                 st.markdown(f"**{ai_messages[-1]}**")
             else:
-                st.warning("No response received.")
+                st.warning("⚠️ No response received.")
 
         except Exception as e:
+            status.empty()
             st.error(f"💥 Error: {e}")
